@@ -14,17 +14,17 @@ const SupportedStores = () => (
     <div className="max-w-7xl mx-auto px-8">
       <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-muted mb-12">Tracking 100+ Global Retailers</p>
       <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-        <Image src="https://cdn.simpleicons.org/amazon/000000" alt="Amazon" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/shopify/96bf48" alt="Shopify" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/bestbuy/0046be" alt="Best Buy" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/walmart/0071ce" alt="Walmart" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/nike/000000" alt="Nike" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/target/cc0000" alt="Target" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/apple/000000" alt="Apple" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/sephora/000000" alt="Sephora" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/adidas/000000" alt="Adidas" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/ebay/e53238" alt="eBay" width={100} height={32} unoptimized className="h-8 w-auto" />
-        <Image src="https://cdn.simpleicons.org/ikea/0051ba" alt="IKEA" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/amazon/000000" alt="Amazon" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/shopify/96bf48" alt="Shopify" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/bestbuy/0046be" alt="Best Buy" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/walmart/0071ce" alt="Walmart" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/nike/000000" alt="Nike" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/target/cc0000" alt="Target" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/apple/000000" alt="Apple" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/sephora/000000" alt="Sephora" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/adidas/000000" alt="Adidas" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/ebay/e53238" alt="eBay" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+        <Image src="https://cdn.simpleicons.org/ikea/0051ba" alt="IKEA" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
       </div>
     </div>
   </div>

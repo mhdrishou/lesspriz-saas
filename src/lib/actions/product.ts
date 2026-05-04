@@ -121,3 +121,60 @@ export async function syncUser() {
 
   return dbUser;
 }
+
+export async function createAlert(productId: string, targetPrice: number) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
+  if (!dbUser) throw new Error("User not found");
+
+  await prisma.alert.upsert({
+    where: {
+      userId_productId: {
+        userId: dbUser.id,
+        productId,
+      },
+    },
+    update: { targetPrice, isActive: true },
+    create: {
+      userId: dbUser.id,
+      productId,
+      targetPrice,
+    },
+  });
+
+  revalidatePath("/dashboard");
+}
+
+export async function getAlerts() {
+  const user = await currentUser();
+  if (!user) return [];
+
+  const alerts = await prisma.alert.findMany({
+    where: { user: { clerkId: user.id } },
+    include: {
+      product: {
+        include: {
+          history: {
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+        },
+      },
+    },
+  });
+
+  return alerts;
+}
+
+export async function deleteAlert(alertId: string) {
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await prisma.alert.delete({
+    where: { id: alertId },
+  });
+
+  revalidatePath("/dashboard");
+}

@@ -8,7 +8,7 @@ import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { DonationModal } from "@/components/DonationModal";
 import { UserButton } from "@clerk/nextjs";
-import { addProduct, deleteProduct } from "@/lib/actions/product";
+import { addProduct, deleteProduct, createAlert, deleteAlert } from "@/lib/actions/product";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface Product { 
@@ -25,21 +25,49 @@ interface Product {
   history: { price: number; createdAt: Date }[];
 }
 
+interface Alert {
+  id: string;
+  productId: string;
+  targetPrice: number | null;
+  isActive: boolean;
+  product: Product;
+}
+
 interface DashboardContentProps {
   initialProducts: Product[];
+  initialAlerts: Alert[];
   user: {
     name?: string | null;
     email?: string;
   } | null;
 }
 
-export const DashboardContent = ({ initialProducts, user }: DashboardContentProps) => {
+export const DashboardContent = ({ initialProducts, initialAlerts, user }: DashboardContentProps) => {
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "alerts">("overview");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDonation, setShowDonation] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newUrl, setNewUrl] = useState("");
+  const [targetPrice, setTargetPrice] = useState("");
+  const [isSavingAlert, setIsSavingAlert] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const handleCreateAlert = async (productId: string) => {
+    if (!targetPrice) return;
+    setIsSavingAlert(true);
+    try {
+      await createAlert(productId, parseFloat(targetPrice));
+      setTargetPrice("");
+      router.refresh();
+      alert("Alert created successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to create alert.");
+    } finally {
+      setIsSavingAlert(false);
+    }
+  };
 
   const handleTrack = React.useCallback(async (urlToTrack?: string) => {
     const targetUrl = urlToTrack || newUrl;
@@ -83,13 +111,22 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
           Lesspriz
         </div>
         <nav className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 text-accent font-bold">
+          <button 
+            onClick={() => setActiveTab("overview")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'overview' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+          >
             <LayoutGrid className="w-5 h-5" /> Overview
           </button>
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted hover:bg-bg transition-colors font-medium">
+          <button 
+            onClick={() => setActiveTab("products")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'products' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+          >
             <Package className="w-5 h-5" /> My Products
           </button>
-          <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted hover:bg-bg transition-colors font-medium">
+          <button 
+            onClick={() => setActiveTab("alerts")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'alerts' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+          >
             <Bell className="w-5 h-5" /> Alerts
           </button>
         </nav>
@@ -112,36 +149,160 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
       </aside>
 
       <main className="flex-1 p-10 lg:p-20 overflow-y-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
-          <div>
-            <h2 className="text-5xl font-black tracking-tighter mb-2">Dashboard</h2>
-            <p className="text-muted font-medium">Tracking {initialProducts.length} products.</p>
-          </div>
-          <div className="flex gap-4 w-full md:w-auto">
-            <input 
-                type="text" 
-                placeholder="Paste URL..." 
-                className="flex-1 md:w-80 px-6 py-4 rounded-2xl border border-border bg-white focus:ring-4 ring-accent/5 outline-none font-medium"
-                value={newUrl}
-                onChange={(e) => setNewUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
-            />
-            <Button onClick={() => handleTrack()} disabled={isAdding || !newUrl} className="whitespace-nowrap">
-                {isAdding ? "Scanning..." : "Track New"}
-            </Button>
-          </div>
-        </header>
+        {activeTab === "overview" && (
+            <>
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+                <div>
+                    <h2 className="text-5xl font-black tracking-tighter mb-2">Dashboard</h2>
+                    <p className="text-muted font-medium">Tracking {initialProducts.length} products.</p>
+                </div>
+                <div className="flex gap-4 w-full md:w-auto">
+                    <input 
+                        type="text" 
+                        placeholder="Paste URL..." 
+                        className="flex-1 md:w-80 px-6 py-4 rounded-2xl border border-border bg-white focus:ring-4 ring-accent/5 outline-none font-medium"
+                        value={newUrl}
+                        onChange={(e) => setNewUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
+                    />
+                    <Button onClick={() => handleTrack()} disabled={isAdding || !newUrl} className="whitespace-nowrap">
+                        {isAdding ? "Scanning..." : "Track New"}
+                    </Button>
+                </div>
+                </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {initialProducts.map((p) => (
-            <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
-          ))}
-          {initialProducts.length === 0 && !isAdding && (
-            <div className="col-span-full py-32 text-center border-2 border-dashed border-border rounded-4xl">
-                <p className="text-muted font-bold">No products tracked yet. Add your first URL above!</p>
-            </div>
-          )}
-        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {initialProducts.map((p) => (
+                    <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
+                ))}
+                {initialProducts.length === 0 && !isAdding && (
+                    <div className="col-span-full py-32 text-center border-2 border-dashed border-border rounded-4xl">
+                        <p className="text-muted font-bold">No products tracked yet. Add your first URL above!</p>
+                    </div>
+                )}
+                </div>
+            </>
+        )}
+
+        {activeTab === "products" && (
+            <>
+                <header className="mb-16">
+                    <h2 className="text-5xl font-black tracking-tighter mb-2">My Products</h2>
+                    <p className="text-muted font-medium">Manage your {initialProducts.length} tracked items.</p>
+                </header>
+                <div className="bg-white rounded-[2.5rem] border border-border overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-bg">
+                            <tr>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Product</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Price</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Status</th>
+                                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {initialProducts.map(p => (
+                                <tr key={p.id} className="hover:bg-bg/50 transition-colors group">
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-bg flex items-center justify-center p-2 flex-shrink-0">
+                                                <Image src={p.image} alt="" width={48} height={48} unoptimized className="object-contain max-w-full max-h-full" />
+                                            </div>
+                                            <p className="font-bold text-sm line-clamp-1">{p.title}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <p className="font-black">${p.currentPrice.toFixed(2)}</p>
+                                        {p.previousPrice && <p className="text-[10px] font-bold text-muted line-through">${p.previousPrice.toFixed(2)}</p>}
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${p.outOfStock ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${p.outOfStock ? 'bg-red-500' : 'bg-green-500'}`} />
+                                            {p.outOfStock ? 'Out of Stock' : 'Tracking'}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex gap-2">
+                                            <Button variant="secondary" className="p-2 h-10 w-10" onClick={() => setSelectedProduct(p)}>
+                                                <Info className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="secondary" className="p-2 h-10 w-10 hover:bg-red-50" onClick={async () => {
+                                                if(confirm("Delete product?")) {
+                                                    await deleteProduct(p.id);
+                                                    router.refresh();
+                                                }
+                                            }}>
+                                                <Trash2 className="w-4 h-4 text-red-500" />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </>
+        )}
+
+        {activeTab === "alerts" && (
+            <>
+                <header className="mb-16">
+                    <h2 className="text-5xl font-black tracking-tighter mb-2">Price Drop Alerts</h2>
+                    <p className="text-muted font-medium">Get notified the second a price drops below your target.</p>
+                </header>
+                {initialAlerts.length > 0 ? (
+                    <div className="bg-white rounded-[2.5rem] border border-border overflow-hidden">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-bg">
+                                <tr>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Product</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Target Price</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Current</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {initialAlerts.map(alertItem => (
+                                    <tr key={alertItem.id} className="hover:bg-bg/50 transition-colors group">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-bg flex items-center justify-center p-2 flex-shrink-0">
+                                                    <Image src={alertItem.product.image} alt="" width={40} height={40} unoptimized className="object-contain max-w-full max-h-full" />
+                                                </div>
+                                                <p className="font-bold text-sm line-clamp-1">{alertItem.product.title}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <p className="font-black text-accent">${alertItem.targetPrice?.toFixed(2)}</p>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <p className="font-bold">${alertItem.product.currentPrice.toFixed(2)}</p>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <Button variant="secondary" className="p-2 h-10 w-10 hover:bg-red-50" onClick={async () => {
+                                                if(confirm("Delete alert?")) {
+                                                    await deleteAlert(alertItem.id);
+                                                    router.refresh();
+                                                }
+                                            }}>
+                                                <Trash2 className="w-4 h-4 text-red-500" />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="py-32 text-center border-2 border-dashed border-border rounded-4xl">
+                        <div className="w-16 h-16 bg-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <Bell className="w-8 h-8 text-muted" />
+                        </div>
+                        <p className="text-muted font-bold">No active alerts. Set a target price in product details!</p>
+                    </div>
+                )}
+            </>
+        )}
       </main>
 
       {showDonation && <DonationModal onClose={() => setShowDonation(false)} />}
@@ -227,6 +388,30 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
                         }}>
                             <Trash2 className="w-5 h-5 text-red-500" />
                         </Button>
+                      </div>
+
+                      <div className="pt-8 border-t border-border">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-4 flex items-center gap-2"><Bell className="w-3 h-3" /> Set Price Alert</p>
+                          <div className="flex gap-4">
+                              <div className="relative flex-1">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-muted">$</span>
+                                  <input 
+                                    type="number" 
+                                    placeholder="Target Price" 
+                                    className="w-full pl-8 pr-4 py-3 rounded-xl border border-border bg-bg focus:ring-2 ring-accent/20 outline-none font-bold"
+                                    value={targetPrice}
+                                    onChange={(e) => setTargetPrice(e.target.value)}
+                                  />
+                              </div>
+                              <Button 
+                                onClick={() => handleCreateAlert(selectedProduct.id)} 
+                                disabled={isSavingAlert || !targetPrice}
+                                className="px-8"
+                              >
+                                  {isSavingAlert ? "Saving..." : "Set Alert"}
+                              </Button>
+                          </div>
+                          <p className="text-[10px] font-medium text-muted mt-3">We&apos;ll email you at {user?.email} when the price drops below this amount.</p>
                       </div>
                   </div>
               </div>

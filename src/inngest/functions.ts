@@ -12,7 +12,11 @@ export const checkPrices = inngest.createFunction(
     const products = await step.run("fetch-products", async () => {
       return await prisma.product.findMany({
         include: {
-          users: true,
+          users: {
+            include: {
+              alerts: true,
+            },
+          },
         },
       });
     });
@@ -22,21 +26,29 @@ export const checkPrices = inngest.createFunction(
         const scraped = await scrapeProduct(product.url);
         if (!scraped) return;
 
-        if (scraped.price < product.currentPrice) {
-          // Price dropped!
-          await prisma.product.update({
-            where: { id: product.id },
-            data: {
-              previousPrice: product.currentPrice,
-              currentPrice: scraped.price,
-              history: {
-                create: { price: scraped.price },
-              },
+        const isPriceLower = scraped.price < product.currentPrice;
+        
+        // Update product in DB
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            previousPrice: isPriceLower ? product.currentPrice : product.previousPrice,
+            currentPrice: scraped.price,
+            description: scraped.description,
+            category: scraped.category,
+            outOfStock: scraped.outOfStock,
+            history: {
+              create: { price: scraped.price },
             },
-          });
+          },
+        });
 
-          // Send alerts to all users tracking this product
-          for (const user of product.users) {
+        // Check alerts for each user
+        for (const user of product.users) {
+          const alert = user.alerts.find(a => a.productId === product.id && a.isActive);
+          
+          if (alert && alert.targetPrice && scraped.price <= alert.targetPrice) {
+            // Target price hit!
             await sendPriceDropEmail(
               user.email,
               product.title,
@@ -44,18 +56,22 @@ export const checkPrices = inngest.createFunction(
               scraped.price,
               product.url
             );
+
+            // Optionally deactivate alert after firing once
+            await prisma.alert.update({
+              where: { id: alert.id },
+              data: { isActive: false }
+            });
+          } else if (isPriceLower && !alert) {
+             // Fallback: Notify on any drop if no specific alert set
+             await sendPriceDropEmail(
+                user.email,
+                product.title,
+                product.currentPrice,
+                scraped.price,
+                product.url
+              );
           }
-        } else if (scraped.price !== product.currentPrice) {
-          // Price changed but not dropped (or just update history)
-          await prisma.product.update({
-            where: { id: product.id },
-            data: {
-              currentPrice: scraped.price,
-              history: {
-                create: { price: scraped.price },
-              },
-            },
-          });
         }
       });
     }
