@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { TrendingDown, Zap, Brain, Shield, Link as LinkIcon, Heart, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/Button";
-import { SignInButton, SignUpButton, Show } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
 
 import Link from "next/link";
 
@@ -13,11 +14,11 @@ const SupportedStores = () => (
     <div className="max-w-7xl mx-auto px-8">
       <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-muted mb-12">Tracking 100+ Global Retailers</p>
       <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-        <div className="text-2xl font-black italic">AMAZON</div>
-        <div className="text-2xl font-black">Shopify</div>
-        <div className="text-2xl font-bold">BEST BUY</div>
-        <div className="text-2xl font-serif font-black">Walmart</div>
-        <div className="text-2xl font-mono font-bold tracking-tighter">NIKE</div>
+        <Image src="https://cdn.simpleicons.org/amazon/000000" alt="Amazon" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/shopify/96bf48" alt="Shopify" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/bestbuy/0046be" alt="Best Buy" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/walmart/0071ce" alt="Walmart" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/nike/000000" alt="Nike" width={100} height={32} unoptimized className="h-8 w-auto" />
       </div>
     </div>
   </div>
@@ -59,6 +60,7 @@ const PricingComparison = () => (
 
 export default function LandingPage() {
   const [url, setUrl] = useState("");
+  const { userId } = useAuth();
 
   return (
     <div className="hero-gradient min-h-screen">
@@ -70,19 +72,23 @@ export default function LandingPage() {
           Lesspriz
         </div>
         <div className="flex gap-4 items-center glass p-2 rounded-2xl">
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button className="px-6 py-2 text-sm font-bold text-muted hover:text-fg transition-colors">Log in</button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button className="py-2.5 px-6 text-sm">Launch App</Button>
-            </SignUpButton>
-          </Show>
-          <Show when="signed-in">
-            <Link href="/dashboard">
-              <Button className="py-2.5 px-6 text-sm">Go to Dashboard</Button>
-            </Link>
-          </Show>
+          {!userId ? (
+            <>
+              <SignInButton>
+                <button className="px-6 py-2 text-sm font-bold text-muted hover:text-fg transition-colors">Log in</button>
+              </SignInButton>
+              <SignUpButton>
+                <Button className="py-2.5 px-6 text-sm">Launch App</Button>
+              </SignUpButton>
+            </>
+          ) : (
+            <>
+              <Link href="/dashboard" className="mr-2">
+                <Button className="py-2.5 px-6 text-sm">Go to Dashboard</Button>
+              </Link>
+              <UserButton />
+            </>
+          )}
         </div>
       </nav>
 

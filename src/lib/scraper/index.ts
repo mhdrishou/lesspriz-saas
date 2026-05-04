@@ -60,27 +60,59 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
   try {
     const { data } = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
       }
     });
 
     const $ = cheerio.load(data);
+    let title = $('meta[property="og:title"]').attr('content') || $('title').text() || 'Product Name';
+    let image = $('meta[property="og:image"]').attr('content') || $('link[rel="image_src"]').attr('href') || '';
+    let priceText = '0';
+    let currency = 'USD';
 
-    const title = $('meta[property="og:title"]').attr('content') || $('title').text() || 'Product Name';
-    const image = $('meta[property="og:image"]').attr('content') || '';
-    
-    // Simple price extraction (look for common price classes or meta tags)
-    const priceText = $('meta[property="product:price:amount"]').attr('content') || 
-                    $('.price').first().text() || 
-                    $('.a-price-whole').first().text() ||
-                    '0';
-    
-    const price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
-    const currency = $('meta[property="product:price:currency"]').attr('content') || 'USD';
+    // 1. Try JSON-LD
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const json = JSON.parse($(el).html() || '{}');
+        const product = json['@type'] === 'Product' ? json : (json['@graph']?.find((item: { '@type': string }) => item['@type'] === 'Product'));
+        
+        if (product) {
+          title = product.name || title;
+          image = (Array.isArray(product.image) ? product.image[0] : product.image) || image;
+          
+          const offers = product.offers;
+          if (offers) {
+            const offer = Array.isArray(offers) ? offers[0] : offers;
+            priceText = offer.price || offer.lowPrice || priceText;
+            currency = offer.priceCurrency || currency;
+          }
+        }
+      } catch { }
+    });
+
+    // 2. Meta tags and common selectors if JSON-LD failed
+    if (priceText === '0') {
+      priceText = $('meta[property="product:price:amount"]').attr('content') || 
+                  $('meta[name="twitter:data1"]').attr('content') || // Often used for price
+                  $('.price').first().text() || 
+                  $('.a-price-whole').first().text() ||
+                  $('#priceblock_ourprice').text() ||
+                  '.current-price'.split(' ').map(s => $(s).first().text()).find(t => t) ||
+                  '0';
+    }
+
+    if (!image) {
+      image = $('meta[name="twitter:image"]').attr('content') || '';
+    }
+
+    const price = parseFloat(priceText.toString().replace(/[^0-9.]/g, '')) || 0;
+    currency = $('meta[property="product:price:currency"]').attr('content') || currency;
 
     return {
       title: title.trim(),
-      image,
+      image: image.startsWith('//') ? `https:${image}` : image,
       price,
       currency,
       url
