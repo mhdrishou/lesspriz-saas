@@ -1,27 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { TrendingDown, LayoutGrid, Package, Bell, ArrowRight, LogOut } from "lucide-react";
+import Image from "next/image";
+import { TrendingDown, LayoutGrid, Package, Bell } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { DonationModal } from "@/components/DonationModal";
-import { UserButton, SignOutButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { addProduct, deleteProduct } from "@/lib/actions/product";
 import { useRouter, useSearchParams } from "next/navigation";
 
-interface Product {
+interface Product { url: string;
   id: string;
   title: string;
   currentPrice: number;
   previousPrice: number | null;
   image: string;
   currency: string;
-  history: any[];
+  history: { price: number; createdAt: Date }[];
 }
 
 interface DashboardContentProps {
-  initialProducts: any[];
-  user: any;
+  initialProducts: Product[];
+  user: {
+    name?: string | null;
+    email?: string;
+  } | null;
 }
 
 export const DashboardContent = ({ initialProducts, user }: DashboardContentProps) => {
@@ -32,14 +36,7 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const urlFromQuery = searchParams.get("url");
-    if (urlFromQuery) {
-        handleTrack(urlFromQuery);
-    }
-  }, [searchParams]);
-
-  const handleTrack = async (urlToTrack?: string) => {
+  const handleTrack = React.useCallback(async (urlToTrack?: string) => {
     const targetUrl = urlToTrack || newUrl;
     if (!targetUrl) return;
     
@@ -49,11 +46,20 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
       setNewUrl("");
       router.refresh();
     } catch (error) {
+      console.error(error);
       alert("Failed to track product. Make sure the URL is valid.");
     } finally {
       setIsAdding(false);
     }
-  };
+  }, [newUrl, router]);
+
+  useEffect(() => {
+    const urlFromQuery = searchParams.get("url");
+    if (urlFromQuery) {
+        const timer = setTimeout(() => handleTrack(urlFromQuery), 0);
+        return () => clearTimeout(timer);
+    }
+  }, [searchParams, handleTrack]);
 
   const totalSaved = initialProducts.reduce((acc, p) => {
     if (p.previousPrice && p.currentPrice < p.previousPrice) {
@@ -86,12 +92,12 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
         <div className="mt-auto flex flex-col gap-4">
             <div className="p-6 rounded-3xl bg-accent/5 border border-accent/10">
                 <p className="text-xs font-black uppercase tracking-widest text-accent mb-4">You saved ${totalSaved.toFixed(2)} 🎉</p>
-                <p className="text-sm font-bold leading-relaxed mb-6">"Lesspriz is a labor of love. Help us keep it alive."</p>
+                <p className="text-sm font-bold leading-relaxed mb-6">&quot;Lesspriz is a labor of love. Help us keep it alive.&quot;</p>
                 <Button variant="accent" className="w-full py-3 text-xs" onClick={() => setShowDonation(true)}>Support ❤️</Button>
             </div>
             
             <div className="flex items-center gap-3 px-4">
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
                 <div className="flex-1 overflow-hidden">
                     <p className="text-sm font-bold truncate">{user?.name || 'User'}</p>
                     <p className="text-xs text-muted truncate">{user?.email}</p>
@@ -139,9 +145,9 @@ export const DashboardContent = ({ initialProducts, user }: DashboardContentProp
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-fg/20 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
               <div className="bg-white p-10 rounded-5xl w-full max-w-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
                   <div className="flex gap-8 mb-8">
-                      <div className="w-48 h-48 rounded-3xl bg-bg flex items-center justify-center p-4">
-                          <img src={selectedProduct.image} alt="" className="max-w-full max-h-full object-contain" />
-                      </div>
+                       <div className="w-48 h-48 rounded-3xl bg-bg flex items-center justify-center p-4">
+                           <Image src={selectedProduct.image} alt={selectedProduct.title} width={200} height={200} unoptimized className="max-w-full max-h-full object-contain" />
+                       </div>
                       <div className="flex-1">
                           <h3 className="text-2xl font-black mb-2">{selectedProduct.title}</h3>
                           <div className="flex gap-6 mb-6">

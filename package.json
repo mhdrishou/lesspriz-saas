@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.3.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "axios": "^1.16.0",
     "cheerio": "^1.2.0",
@@ -24,6 +26,7 @@
     "recharts": "^3.8.1",
     "resend": "^6.12.2",
     "tailwind-merge": "^3.5.0",
+    "ws": "^8.20.0",
     "zod": "^4.4.2"
   },
   "devDependencies": {
@@ -31,6 +34,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.18.1",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4.0.0",

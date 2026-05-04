@@ -4,8 +4,10 @@ import { scrapeProduct } from "@/lib/scraper";
 import { sendPriceDropEmail } from "@/lib/resend";
 
 export const checkPrices = inngest.createFunction(
-  { id: "check-prices" },
-  { cron: "0 */8 * * *" }, // Every 8 hours
+  {
+    id: "check-prices",
+    triggers: [{ cron: "0 */8 * * *" }],
+  },
   async ({ step }) => {
     const products = await step.run("fetch-products", async () => {
       return await prisma.product.findMany({
@@ -44,16 +46,16 @@ export const checkPrices = inngest.createFunction(
             );
           }
         } else if (scraped.price !== product.currentPrice) {
-            // Price changed but not dropped (or just update history)
-            await prisma.product.update({
-                where: { id: product.id },
-                data: {
-                  currentPrice: scraped.price,
-                  history: {
-                    create: { price: scraped.price },
-                  },
-                },
-              });
+          // Price changed but not dropped (or just update history)
+          await prisma.product.update({
+            where: { id: product.id },
+            data: {
+              currentPrice: scraped.price,
+              history: {
+                create: { price: scraped.price },
+              },
+            },
+          });
         }
       });
     }

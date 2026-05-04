@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { Icon } from '@/components/Icon';
 
 interface Product {
   id: string;
@@ -28,7 +28,7 @@ export const ProductCard = ({ product, onClick }: ProductCardProps) => {
     >
       <div className="aspect-square rounded-3xl bg-bg flex items-center justify-center overflow-hidden mb-6 group-hover:scale-105 transition-transform duration-500">
         {product.image.startsWith('http') ? (
-            <img src={product.image} alt={product.title} className="w-full h-full object-contain p-4" />
+            <Image src={product.image} alt={product.title} width={300} height={300} unoptimized className="w-full h-full object-contain p-4" />
         ) : (
             <span className="text-6xl">{product.image || '📦'}</span>
         )}

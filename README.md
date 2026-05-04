@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LessPriz SaaS
 
-## Getting Started
+A price tracking SaaS application built with Next.js, Prisma, Neon PostgreSQL, Clerk authentication, and Inngest for background jobs.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Track product prices across e-commerce stores
+- Get price drop alerts via email (Resend)
+- Dashboard with price history charts
+- Automated price checking every 8 hours via Inngest
+- Authentication with Clerk
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **ORM**: Prisma with Neon PostgreSQL (serverless)
+- **Auth**: Clerk
+- **Styling**: Tailwind CSS 4
+- **Email**: Resend
+- **Background Jobs**: Inngest
+- **Deployment**: Vercel
+
+## Environment Variables
+
+Create a `.env` file in the root with the following variables:
+
+```env
+# Database (Neon)
+DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://...neon.tech/neondb?sslmode=require"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+CLERK_SECRET_KEY=your_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# Scraping
+RAINFOREST_API_KEY=your_rainforest_api_key
+
+# Email
+RESEND_API_KEY=your_resend_api_key
+
+# Inngest
+INNGEST_EVENT_KEY=your_inngest_event_key
+INNGEST_SIGNING_KEY=your_inngest_signing_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npx prisma generate
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+## Database Setup
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Push schema to database
+npx prisma db push
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Or run migrations
+npx prisma migrate dev --name init
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment to Vercel
 
-## Deploy on Vercel
+1. Push this repository to GitHub
+2. Import the project in Vercel
+3. Add all environment variables from `.env` to Vercel project settings
+4. Deploy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The build command is `npm run build` and output directory is `.next`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── check-price/   # Manual price check endpoint
+│   │   ├── inngest/       # Inngest webhook handler
+│   │   └── products/      # Product CRUD endpoints
+│   ├── dashboard/         # Dashboard page
+│   └── page.tsx           # Landing page
+├── components/             # React components
+├── lib/                   # Utilities (Prisma, Resend, scraper)
+└── inngest/               # Inngest functions
+```
+
+## License
+
+MIT

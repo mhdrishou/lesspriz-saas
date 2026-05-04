@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { TrendingDown, Zap, Brain, Shield, Link as LinkIcon, Heart, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/Button";
 import { SignInButton, SignUpButton, Show } from "@clerk/nextjs";
@@ -27,11 +27,11 @@ const PricingComparison = () => (
   <section className="py-32 max-w-7xl mx-auto px-8">
     <div className="text-center mb-20">
       <h2 className="text-5xl font-black tracking-tighter mb-4">Generosity by Design.</h2>
-      <p className="text-muted text-lg font-medium">Why we don't have a subscription model.</p>
+      <p className="text-muted text-lg font-medium">Why we don&apos;t have a subscription model.</p>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
       <div className="p-12 rounded-4xl bg-white border border-border">
-        <h3 className="text-2xl font-black mb-8">The "Other" Guys</h3>
+        <h3 className="text-2xl font-black mb-8">The &quot;Other&quot; Guys</h3>
         <ul className="space-y-6">
           {["$15/month subscription", "Locked features", "Aggressive upsells", "Tracking limits", "Ads in your inbox"].map(item => (
             <li key={item} className="flex items-center gap-4 text-muted font-medium">

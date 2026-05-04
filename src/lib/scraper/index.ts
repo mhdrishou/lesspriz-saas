@@ -70,7 +70,7 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
     const image = $('meta[property="og:image"]').attr('content') || '';
     
     // Simple price extraction (look for common price classes or meta tags)
-    let priceText = $('meta[property="product:price:amount"]').attr('content') || 
+    const priceText = $('meta[property="product:price:amount"]').attr('content') || 
                     $('.price').first().text() || 
                     $('.a-price-whole').first().text() ||
                     '0';

@@ -41,7 +41,7 @@ export const DonationModal = ({ onClose }: DonationModalProps) => {
         </div>
         <h2 className="text-4xl font-black tracking-tight mb-4">Support Lesspriz</h2>
         <p className="text-muted font-medium mb-10 leading-relaxed text-sm">
-          We don't sell your data or charge subscriptions. We rely on people like you who've saved money using our tool.
+          We don&apos;t sell your data or charge subscriptions. We rely on people like you who&apos;ve saved money using our tool.
         </p>
         <div className="grid grid-cols-3 gap-4 mb-10">
           {tiers.map(tier => (
