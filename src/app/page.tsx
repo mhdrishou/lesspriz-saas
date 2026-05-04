@@ -19,6 +19,12 @@ const SupportedStores = () => (
         <Image src="https://cdn.simpleicons.org/bestbuy/0046be" alt="Best Buy" width={100} height={32} unoptimized className="h-8 w-auto" />
         <Image src="https://cdn.simpleicons.org/walmart/0071ce" alt="Walmart" width={100} height={32} unoptimized className="h-8 w-auto" />
         <Image src="https://cdn.simpleicons.org/nike/000000" alt="Nike" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/target/cc0000" alt="Target" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/apple/000000" alt="Apple" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/sephora/000000" alt="Sephora" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/adidas/000000" alt="Adidas" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/ebay/e53238" alt="eBay" width={100} height={32} unoptimized className="h-8 w-auto" />
+        <Image src="https://cdn.simpleicons.org/ikea/0051ba" alt="IKEA" width={100} height={32} unoptimized className="h-8 w-auto" />
       </div>
     </div>
   </div>

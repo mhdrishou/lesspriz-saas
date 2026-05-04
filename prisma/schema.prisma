@@ -28,6 +28,9 @@ model Product {
   lowestPrice   Float?
   highestPrice  Float?
   currency      String         @default("USD")
+  description   String?
+  category      String?
+  outOfStock    Boolean        @default(false)
   history       PriceHistory[]
   alerts        Alert[]
   users         User[]

@@ -7,6 +7,9 @@ export interface ScrapedProduct {
   price: number;
   currency: string;
   url: string;
+  description?: string;
+  category?: string;
+  outOfStock?: boolean;
 }
 
 export async function scrapeProduct(url: string): Promise<ScrapedProduct | null> {
@@ -69,6 +72,9 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
     const $ = cheerio.load(data);
     let title = $('meta[property="og:title"]').attr('content') || $('title').text() || 'Product Name';
     let image = $('meta[property="og:image"]').attr('content') || $('link[rel="image_src"]').attr('href') || '';
+    let description = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || '';
+    let category = '';
+    let outOfStock = false;
     let priceText = '0';
     let currency = 'USD';
 
@@ -81,12 +87,15 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
         if (product) {
           title = product.name || title;
           image = (Array.isArray(product.image) ? product.image[0] : product.image) || image;
+          description = product.description || description;
+          category = product.category || category;
           
           const offers = product.offers;
           if (offers) {
             const offer = Array.isArray(offers) ? offers[0] : offers;
             priceText = offer.price || offer.lowPrice || priceText;
             currency = offer.priceCurrency || currency;
+            outOfStock = offer.availability?.includes('OutOfStock') || offer.availability?.includes('SoldOut') || false;
           }
         }
       } catch { }
@@ -95,12 +104,17 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
     // 2. Meta tags and common selectors if JSON-LD failed
     if (priceText === '0') {
       priceText = $('meta[property="product:price:amount"]').attr('content') || 
-                  $('meta[name="twitter:data1"]').attr('content') || // Often used for price
+                  $('meta[name="twitter:data1"]').attr('content') || 
                   $('.price').first().text() || 
                   $('.a-price-whole').first().text() ||
                   $('#priceblock_ourprice').text() ||
                   '.current-price'.split(' ').map(s => $(s).first().text()).find(t => t) ||
                   '0';
+    }
+
+    if (!outOfStock) {
+        const availability = $('.availability, .stock, .out-of-stock').text().toLowerCase();
+        outOfStock = availability.includes('out of stock') || availability.includes('sold out');
     }
 
     if (!image) {
@@ -115,7 +129,10 @@ async function scrapeFallback(url: string): Promise<ScrapedProduct | null> {
       image: image.startsWith('//') ? `https:${image}` : image,
       price,
       currency,
-      url
+      url,
+      description: description.trim(),
+      category: category.trim(),
+      outOfStock
     };
   } catch (error) {
     console.error('Fallback scraping error:', error);

@@ -23,6 +23,9 @@ export async function addProduct(url: string) {
         url: scrapedProduct.url,
         title: scrapedProduct.title,
         image: scrapedProduct.image,
+        description: scrapedProduct.description,
+        category: scrapedProduct.category,
+        outOfStock: scrapedProduct.outOfStock,
         currentPrice: scrapedProduct.price,
         currency: scrapedProduct.currency,
         history: {
@@ -32,6 +35,21 @@ export async function addProduct(url: string) {
         },
       },
     });
+  } else {
+    // Optionally update existing product details
+    const scrapedProduct = await scrapeProduct(url);
+    if (scrapedProduct) {
+        product = await prisma.product.update({
+            where: { id: product.id },
+            data: {
+                title: scrapedProduct.title,
+                image: scrapedProduct.image,
+                description: scrapedProduct.description,
+                category: scrapedProduct.category,
+                outOfStock: scrapedProduct.outOfStock,
+            }
+        });
+    }
   }
 
   // Associate product with user
