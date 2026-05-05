@@ -174,6 +174,7 @@ export default function LandingPage() {
           <div className="flex gap-8 md:gap-10 text-xs font-black uppercase tracking-widest text-muted">
             <Link href="/privacy" className="hover:text-fg transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-fg transition-colors">Terms</Link>
+            <Link href="/donate" className="hover:text-fg transition-colors">Donate</Link>
             <Link href="/review" className="hover:text-fg transition-colors">Reviews</Link>
             <Link href="/contact" className="hover:text-fg transition-colors">Contact</Link>
           </div>
