@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --bg: oklch(99% 0.002 240);
+  --bg: oklch(97% 0.015 262);
   --surface: oklch(100% 0 0);
-  --fg: oklch(18% 0.012 250);
-  --muted: oklch(54% 0.012 250);
-  --border: oklch(92% 0.005 250);
-  --accent: oklch(55% 0.25 300);
-  --accent-soft: oklch(95% 0.05 300);
+  --fg: oklch(21% 0.03 264);
+  --muted: oklch(50% 0.028 264);
+  --border: oklch(90% 0.02 264);
+  --accent: oklch(62% 0.24 305);
+  --accent-soft: oklch(94% 0.08 305);
 }
 
 @theme inline {
@@ -24,7 +24,10 @@
 }
 
 body {
-  background-color: var(--bg);
+  background:
+    radial-gradient(circle at 10% 15%, color-mix(in oklab, var(--accent) 13%, white) 0%, transparent 40%),
+    radial-gradient(circle at 90% 0%, color-mix(in oklab, #56c7ff 20%, white) 0%, transparent 36%),
+    var(--bg);
   color: var(--fg);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -49,13 +52,16 @@ input:focus-visible {
 .tabular { font-variant-numeric: tabular-nums; }
 
 .glass {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.45));
+  backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, white);
+  box-shadow: 0 10px 40px -20px rgba(26, 28, 56, 0.25);
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at 50% -20%, var(--accent-soft) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 50% -20%, var(--accent-soft) 0%, transparent 52%),
+    radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--accent) 30%, white) 0%, transparent 46%);
 }
 
 .text-balance { text-wrap: balance; }
@@ -70,4 +76,11 @@ input:focus-visible {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58));
+  border: 1px solid color-mix(in srgb, var(--border) 85%, white);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 70px -35px rgba(38, 47, 89, 0.35);
 }

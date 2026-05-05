@@ -9,9 +9,17 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Lesspriz — Free Price Tracking, Donation Powered",
+  title: {
+    default: "Lesspriz",
+    template: "%s | Lesspriz",
+  },
   description: "The premium price tracker for those who value their time and money.",
   metadataBase: new URL("https://lesspriz.com"),
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   openGraph: {
     title: "Lesspriz",
     description: "Track prices, catch drops, and save money with donation-powered alerts.",

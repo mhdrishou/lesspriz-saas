@@ -136,36 +136,36 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
 
   return (
     <div className="flex min-h-screen bg-bg">
-      <aside className="w-80 border-r border-border p-8 hidden lg:flex flex-col gap-10 bg-surface sticky top-0 h-screen">
+      <aside className="w-80 border-r border-border/70 p-8 hidden lg:flex flex-col gap-10 bg-white/50 backdrop-blur-2xl sticky top-0 h-screen">
         <div className="flex items-center gap-3 font-black text-2xl tracking-tighter cursor-pointer" onClick={() => router.push("/")}>
           <div className="w-10 h-10 bg-fg rounded-xl flex items-center justify-center text-white">
             <TrendingDown className="w-5 h-5" />
           </div>
           Lesspriz
         </div>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-2">
           <button 
             onClick={() => setActiveTab("overview")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'overview' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'overview' ? 'glass text-accent shadow-sm' : 'text-muted hover:bg-bg/70'}`}
           >
             <LayoutGrid className="w-5 h-5" /> Overview
           </button>
           <button 
             onClick={() => setActiveTab("products")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'products' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'products' ? 'glass text-accent shadow-sm' : 'text-muted hover:bg-bg/70'}`}
           >
             <Package className="w-5 h-5" /> My Products
           </button>
           <button 
             onClick={() => setActiveTab("alerts")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'alerts' ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-bg'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${activeTab === 'alerts' ? 'glass text-accent shadow-sm' : 'text-muted hover:bg-bg/70'}`}
           >
             <Bell className="w-5 h-5" /> Alerts
           </button>
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
-            <div className="p-6 rounded-3xl bg-accent/5 border border-accent/10">
+            <div className="p-6 rounded-3xl glass-card">
                 <p className="text-xs font-black uppercase tracking-widest text-accent mb-4">You saved ${totalSaved.toFixed(2)} 🎉</p>
                 <p className="text-sm font-bold leading-relaxed mb-6">&quot;Lesspriz is a labor of love. Help us keep it alive.&quot;</p>
                 <Button variant="accent" className="w-full py-3 text-xs" onClick={() => setShowDonation(true)}>Support ❤️</Button>
@@ -181,8 +181,8 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
         </div>
       </aside>
 
-      <main className="flex-1 p-10 lg:p-20 overflow-y-auto">
-        <div className="lg:hidden mb-8 rounded-2xl border border-border bg-white p-2 grid grid-cols-3 gap-2">
+      <main className="flex-1 p-8 md:p-10 lg:p-16 overflow-y-auto">
+        <div className="lg:hidden mb-8 rounded-2xl glass p-2 grid grid-cols-3 gap-2">
           <button
             onClick={() => setActiveTab("overview")}
             className={`rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wider ${activeTab === "overview" ? "bg-accent/10 text-accent" : "text-muted"}`}
@@ -203,7 +203,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
           </button>
         </div>
         {feedback && (
-          <div className={`mb-8 rounded-2xl border px-5 py-4 text-sm font-semibold ${feedback.type === "success" ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}>
+          <div className={`mb-8 rounded-2xl border px-5 py-4 text-sm font-semibold ${feedback.type === "success" ? "bg-green-50/80 border-green-200 text-green-700" : "bg-red-50/80 border-red-200 text-red-700"}`}>
             <div className="flex items-center justify-between gap-4">
               <span>{feedback.message}</span>
               <button onClick={() => setFeedback(null)} className="text-xs uppercase tracking-wider opacity-70 hover:opacity-100">Dismiss</button>
@@ -212,7 +212,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
         )}
         {activeTab === "overview" && (
             <>
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                 <div>
                     <h2 className="text-5xl font-black tracking-tighter mb-2">Dashboard</h2>
                     <p className="text-muted font-medium">Tracking {initialProducts.length} products.</p>
@@ -221,7 +221,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                     <input 
                         type="text" 
                         placeholder="Paste URL..." 
-                        className="flex-1 md:w-80 px-6 py-4 rounded-2xl border border-border bg-white focus:ring-4 ring-accent/5 outline-none font-medium"
+                        className="flex-1 md:w-80 px-6 py-4 rounded-2xl border border-border bg-white/70 backdrop-blur-xl focus:ring-4 ring-accent/5 outline-none font-medium"
                         value={newUrl}
                         onChange={(e) => setNewUrl(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
@@ -251,7 +251,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                     <h2 className="text-5xl font-black tracking-tighter mb-2">My Products</h2>
                     <p className="text-muted font-medium">Manage your {initialProducts.length} tracked items.</p>
                 </header>
-                <div className="bg-white rounded-[2.5rem] border border-border overflow-x-auto">
+                <div className="glass-card rounded-[2.5rem] overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-bg">
                             <tr>
@@ -323,7 +323,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                     <p className="text-muted font-medium">Get notified the second a price drops below your target.</p>
                 </header>
                 {initialAlerts.length > 0 ? (
-                    <div className="bg-white rounded-[2.5rem] border border-border overflow-x-auto">
+                    <div className="glass-card rounded-[2.5rem] overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-bg">
                                 <tr>
@@ -384,7 +384,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
       {showDonation && <DonationModal onClose={() => setShowDonation(false)} />}
       {selectedProduct && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-fg/30 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
-              <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]" onClick={e => e.stopPropagation()}>
+              <div className="glass-card rounded-[3rem] w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]" onClick={e => e.stopPropagation()}>
                   {/* Left Column: Image and Info */}
                   <div className="md:w-80 bg-bg p-10 flex flex-col gap-8 border-r border-border overflow-y-auto">
                       <div className="aspect-square rounded-3xl bg-white flex items-center justify-center p-8 shadow-sm">
