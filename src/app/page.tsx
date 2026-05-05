@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { TrendingDown, Zap, Brain, Shield, Link as LinkIcon, Heart, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/Button";
 import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
@@ -13,18 +12,15 @@ const SupportedStores = () => (
   <div className="py-20 border-y border-border bg-white/50 overflow-hidden">
     <div className="max-w-7xl mx-auto px-8">
       <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-muted mb-12">Tracking 100+ Global Retailers</p>
-      <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-        <Image src="https://cdn.simpleicons.org/amazon/000000" alt="Amazon" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/shopify/96bf48" alt="Shopify" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/bestbuy/0046be" alt="Best Buy" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/walmart/0071ce" alt="Walmart" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/nike/000000" alt="Nike" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/target/cc0000" alt="Target" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/apple/000000" alt="Apple" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/sephora/000000" alt="Sephora" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/adidas/000000" alt="Adidas" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/ebay/e53238" alt="eBay" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
-        <Image src="https://cdn.simpleicons.org/ikea/0051ba" alt="IKEA" width={120} height={40} unoptimized className="h-10 w-auto object-contain" />
+      <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 transition-all duration-700">
+        {["Amazon", "Shopify", "Best Buy", "Walmart", "Nike", "Target", "Apple", "Sephora", "Adidas", "eBay", "IKEA"].map((store) => (
+          <span
+            key={store}
+            className="px-4 py-2 rounded-full border border-border bg-white text-xs md:text-sm font-black tracking-wide text-muted hover:text-fg hover:border-fg/20"
+          >
+            {store}
+          </span>
+        ))}
       </div>
     </div>
   </div>
