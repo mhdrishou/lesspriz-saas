@@ -70,7 +70,7 @@ export default function LandingPage() {
 
   return (
     <div className="hero-gradient min-h-screen">
-      <nav className="p-8 flex justify-between items-center max-w-7xl mx-auto w-full sticky top-0 z-[100]">
+      <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto w-full sticky top-0 z-[100] backdrop-blur-xl">
         <div className="flex items-center gap-3 font-black text-2xl tracking-tighter">
           <div className="w-10 h-10 bg-fg rounded-xl flex items-center justify-center text-white">
             <TrendingDown className="w-5 h-5" />
@@ -98,16 +98,16 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-8 pt-24 pb-40 text-center">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-16 md:pt-24 pb-32 md:pb-40 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-border text-[10px] font-black uppercase tracking-widest mb-10 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             Over $2.4M saved this month
           </div>
-          <h1 className="text-7xl md:text-[9rem] font-black tracking-tighter leading-[0.85] mb-12 text-balance">
+          <h1 className="text-5xl sm:text-6xl md:text-[9rem] font-black tracking-tighter leading-[0.9] md:leading-[0.85] mb-10 md:mb-12 text-balance">
             Shop smart. <br /> <span className="text-muted/20">Pay less.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted max-w-2xl mx-auto mb-16 font-medium leading-relaxed">
+          <p className="text-lg md:text-2xl text-muted max-w-2xl mx-auto mb-12 md:mb-16 font-medium leading-relaxed">
             The premium price tracker for those who value their time and money. Paste a link, and <span className="text-fg font-bold">Lesspriz</span> does the rest.
           </p>
 
@@ -156,13 +156,13 @@ export default function LandingPage() {
             </div>
             Lesspriz
           </div>
-          <div className="flex gap-12 text-xs font-black uppercase tracking-widest text-muted">
-            <a href="#" className="hover:text-fg transition-colors">Privacy</a>
-            <a href="#" className="hover:text-fg transition-colors">Terms</a>
-            <a href="#" className="hover:text-fg transition-colors">Twitter</a>
-            <a href="#" className="hover:text-fg transition-colors">Contact</a>
+          <div className="flex gap-8 md:gap-12 text-xs font-black uppercase tracking-widest text-muted">
+            <Link href="/privacy" className="hover:text-fg transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-fg transition-colors">Terms</Link>
+            <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="hover:text-fg transition-colors">Twitter</a>
+            <Link href="/contact" className="hover:text-fg transition-colors">Contact</Link>
           </div>
-          <p className="text-xs font-bold text-muted">© 2024 Lesspriz. Built for the web.</p>
+          <p className="text-xs font-bold text-muted">© 2026 Lesspriz. Donation-powered price tracking.</p>
         </div>
       </footer>
     </div>

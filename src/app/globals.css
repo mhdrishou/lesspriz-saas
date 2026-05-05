@@ -31,6 +31,21 @@ body {
   letter-spacing: -0.01em;
 }
 
+* {
+  scroll-behavior: smooth;
+}
+
+a, button, input {
+  transition: all 180ms ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 50%, white);
+  outline-offset: 2px;
+}
+
 .tabular { font-variant-numeric: tabular-nums; }
 
 .glass {

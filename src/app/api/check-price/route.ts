@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scrapeProduct } from "@/lib/scraper";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
+  const user = await currentUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { productId } = await req.json();
   if (!productId) return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
 

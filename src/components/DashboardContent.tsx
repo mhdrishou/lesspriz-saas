@@ -43,6 +43,13 @@ interface DashboardContentProps {
 }
 
 export const DashboardContent = ({ initialProducts, initialAlerts, user }: DashboardContentProps) => {
+  const getHostname = (rawUrl: string) => {
+    try {
+      return new URL(rawUrl).hostname;
+    } catch {
+      return "Store link";
+    }
+  };
   const [activeTab, setActiveTab] = useState<"overview" | "products" | "alerts">("overview");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDonation, setShowDonation] = useState(false);
@@ -50,8 +57,15 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
   const [newUrl, setNewUrl] = useState("");
   const [targetPrice, setTargetPrice] = useState("");
   const [isSavingAlert, setIsSavingAlert] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const DONATION_COOLDOWN_DAYS = 7;
+  const DONATION_KEY = "lesspriz:lastDonationPromptAt";
+
+  const setMessage = (type: "success" | "error", message: string) => {
+    setFeedback({ type, message });
+  };
 
   const handleCreateAlert = async (productId: string) => {
     if (!targetPrice) return;
@@ -60,10 +74,10 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
       await createAlert(productId, parseFloat(targetPrice));
       setTargetPrice("");
       router.refresh();
-      alert("Alert created successfully!");
+      setMessage("success", "Alert created successfully.");
     } catch (error) {
       console.error(error);
-      alert("Failed to create alert.");
+      setMessage("error", "Failed to create alert. Please try again.");
     } finally {
       setIsSavingAlert(false);
     }
@@ -78,9 +92,10 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
       await addProduct(targetUrl);
       setNewUrl("");
       router.refresh();
+      setMessage("success", "Product added to tracking.");
     } catch (error) {
       console.error(error);
-      alert("Failed to track product. Make sure the URL is valid.");
+      setMessage("error", "Failed to track product. Make sure the URL is valid.");
     } finally {
       setIsAdding(false);
     }
@@ -93,6 +108,24 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
         return () => clearTimeout(timer);
     }
   }, [searchParams, handleTrack]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (showDonation || initialProducts.length === 0) return;
+
+    const raw = window.localStorage.getItem(DONATION_KEY);
+    const lastPrompt = raw ? Number(raw) : 0;
+    const cooldownMs = DONATION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+    const shouldPrompt = !lastPrompt || Date.now() - lastPrompt > cooldownMs;
+
+    if (shouldPrompt && initialProducts.length >= 2) {
+      const timer = window.setTimeout(() => {
+        setShowDonation(true);
+        window.localStorage.setItem(DONATION_KEY, String(Date.now()));
+      }, 1500);
+      return () => window.clearTimeout(timer);
+    }
+  }, [initialProducts.length, showDonation]);
 
   const totalSaved = initialProducts.reduce((acc, p) => {
     if (p.previousPrice && p.currentPrice < p.previousPrice) {
@@ -149,6 +182,34 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
       </aside>
 
       <main className="flex-1 p-10 lg:p-20 overflow-y-auto">
+        <div className="lg:hidden mb-8 rounded-2xl border border-border bg-white p-2 grid grid-cols-3 gap-2">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wider ${activeTab === "overview" ? "bg-accent/10 text-accent" : "text-muted"}`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("products")}
+            className={`rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wider ${activeTab === "products" ? "bg-accent/10 text-accent" : "text-muted"}`}
+          >
+            Products
+          </button>
+          <button
+            onClick={() => setActiveTab("alerts")}
+            className={`rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wider ${activeTab === "alerts" ? "bg-accent/10 text-accent" : "text-muted"}`}
+          >
+            Alerts
+          </button>
+        </div>
+        {feedback && (
+          <div className={`mb-8 rounded-2xl border px-5 py-4 text-sm font-semibold ${feedback.type === "success" ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"}`}>
+            <div className="flex items-center justify-between gap-4">
+              <span>{feedback.message}</span>
+              <button onClick={() => setFeedback(null)} className="text-xs uppercase tracking-wider opacity-70 hover:opacity-100">Dismiss</button>
+            </div>
+          </div>
+        )}
         {activeTab === "overview" && (
             <>
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
@@ -190,7 +251,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                     <h2 className="text-5xl font-black tracking-tighter mb-2">My Products</h2>
                     <p className="text-muted font-medium">Manage your {initialProducts.length} tracked items.</p>
                 </header>
-                <div className="bg-white rounded-[2.5rem] border border-border overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] border border-border overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-bg">
                             <tr>
@@ -227,9 +288,13 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                                                 <Info className="w-4 h-4" />
                                             </Button>
                                             <Button variant="secondary" className="p-2 h-10 w-10 hover:bg-red-50" onClick={async () => {
-                                                if(confirm("Delete product?")) {
-                                                    await deleteProduct(p.id);
-                                                    router.refresh();
+                                                try {
+                                                  await deleteProduct(p.id);
+                                                  setMessage("success", "Product removed from tracking.");
+                                                  router.refresh();
+                                                } catch (error) {
+                                                  console.error(error);
+                                                  setMessage("error", "Could not remove product.");
                                                 }
                                             }}>
                                                 <Trash2 className="w-4 h-4 text-red-500" />
@@ -238,6 +303,13 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                                     </td>
                                 </tr>
                             ))}
+                            {initialProducts.length === 0 && (
+                              <tr>
+                                <td colSpan={4} className="px-8 py-14 text-center text-sm font-semibold text-muted">
+                                  No tracked products yet. Paste a product URL in Overview to get started.
+                                </td>
+                              </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -251,7 +323,7 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                     <p className="text-muted font-medium">Get notified the second a price drops below your target.</p>
                 </header>
                 {initialAlerts.length > 0 ? (
-                    <div className="bg-white rounded-[2.5rem] border border-border overflow-hidden">
+                    <div className="bg-white rounded-[2.5rem] border border-border overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-bg">
                                 <tr>
@@ -280,9 +352,13 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                                         </td>
                                         <td className="px-8 py-6">
                                             <Button variant="secondary" className="p-2 h-10 w-10 hover:bg-red-50" onClick={async () => {
-                                                if(confirm("Delete alert?")) {
-                                                    await deleteAlert(alertItem.id);
-                                                    router.refresh();
+                                                try {
+                                                  await deleteAlert(alertItem.id);
+                                                  setMessage("success", "Alert removed.");
+                                                  router.refresh();
+                                                } catch (error) {
+                                                  console.error(error);
+                                                  setMessage("error", "Could not remove alert.");
                                                 }
                                             }}>
                                                 <Trash2 className="w-4 h-4 text-red-500" />
@@ -337,8 +413,8 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                       <header className="flex justify-between items-start">
                           <div>
                             <h3 className="text-3xl font-black tracking-tight mb-2 leading-tight">{selectedProduct.title}</h3>
-                            <a href={selectedProduct.url} target="_blank" className="text-xs font-bold text-muted hover:text-accent transition-colors flex items-center gap-1">
-                                {new URL(selectedProduct.url).hostname} <ExternalLink className="w-3 h-3" />
+                            <a href={selectedProduct.url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-muted hover:text-accent transition-colors flex items-center gap-1">
+                                {getHostname(selectedProduct.url)} <ExternalLink className="w-3 h-3" />
                             </a>
                           </div>
                           <div className="text-right">
@@ -378,12 +454,16 @@ export const DashboardContent = ({ initialProducts, initialAlerts, user }: Dashb
                       </div>
 
                       <div className="flex gap-4">
-                        <Button className="flex-1 py-5 text-lg" onClick={() => window.open(selectedProduct.url, '_blank')}>View Store Page</Button>
+                        <Button className="flex-1 py-5 text-lg" onClick={() => window.open(selectedProduct.url, '_blank', 'noopener,noreferrer')}>View Store Page</Button>
                         <Button variant="secondary" className="px-6 border-red-100 hover:bg-red-50" onClick={async () => {
-                            if(confirm("Stop tracking this product?")) {
-                                await deleteProduct(selectedProduct.id);
-                                setSelectedProduct(null);
-                                router.refresh();
+                            try {
+                              await deleteProduct(selectedProduct.id);
+                              setSelectedProduct(null);
+                              setMessage("success", "Product removed from tracking.");
+                              router.refresh();
+                            } catch (error) {
+                              console.error(error);
+                              setMessage("error", "Could not remove product.");
                             }
                         }}>
                             <Trash2 className="w-5 h-5 text-red-500" />

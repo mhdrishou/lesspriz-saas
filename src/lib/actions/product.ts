@@ -4,23 +4,45 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { scrapeProduct } from "@/lib/scraper";
 import { currentUser } from "@clerk/nextjs/server";
+import { z } from "zod";
+
+const urlSchema = z.string().trim().url("Please enter a valid product URL.");
+
+const targetPriceSchema = z
+  .number()
+  .positive("Target price must be greater than zero.")
+  .max(1000000, "Target price is too high.");
 
 export async function addProduct(url: string) {
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");
+  const parsedUrl = urlSchema.parse(url);
+
+  const dbUser = await prisma.user.upsert({
+    where: { clerkId: user.id },
+    update: {
+      email: user.emailAddresses[0]?.emailAddress ?? "",
+      name: [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || "User",
+    },
+    create: {
+      clerkId: user.id,
+      email: user.emailAddresses[0]?.emailAddress ?? "",
+      name: [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || "User",
+    },
+  });
 
   // Check if product exists
   let product = await prisma.product.findUnique({
-    where: { url },
+    where: { url: parsedUrl },
   });
 
   if (!product) {
-    const scrapedProduct = await scrapeProduct(url);
+    const scrapedProduct = await scrapeProduct(parsedUrl);
     if (!scrapedProduct) throw new Error("Failed to scrape product");
 
     product = await prisma.product.create({
       data: {
-        url: scrapedProduct.url,
+      url: parsedUrl,
         title: scrapedProduct.title,
         image: scrapedProduct.image,
         description: scrapedProduct.description,
@@ -37,7 +59,7 @@ export async function addProduct(url: string) {
     });
   } else {
     // Optionally update existing product details
-    const scrapedProduct = await scrapeProduct(url);
+    const scrapedProduct = await scrapeProduct(parsedUrl);
     if (scrapedProduct) {
         product = await prisma.product.update({
             where: { id: product.id },
@@ -54,7 +76,7 @@ export async function addProduct(url: string) {
 
   // Associate product with user
   await prisma.user.update({
-    where: { clerkId: user.id },
+    where: { id: dbUser.id },
     data: {
       products: {
         connect: { id: product.id },
@@ -136,11 +158,11 @@ export async function createAlert(productId: string, targetPrice: number) {
         productId,
       },
     },
-    update: { targetPrice, isActive: true },
+    update: { targetPrice: targetPriceSchema.parse(targetPrice), isActive: true },
     create: {
       userId: dbUser.id,
       productId,
-      targetPrice,
+      targetPrice: targetPriceSchema.parse(targetPrice),
     },
   });
 
